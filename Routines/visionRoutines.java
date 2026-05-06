@@ -40,10 +40,6 @@ AprilTagDetection id22 = null;
     }
 
 
-    private void applyRotation(double power) 
-    {
-        
-    }
 
     public void Aim() {
         aprilTagWebcam.update();
@@ -63,7 +59,10 @@ AprilTagDetection id22 = null;
             double currentBearing = id22.ftcPose.bearing;
             double targetBearing  = 0.0;
             double rotationPower  = rotationPID.calculate(currentBearing, targetBearing);
-            applyRotation(rotationPower);
+            frontLeft.setPower(-power);
+            backLeft.setPower(-power);
+            frontRight.setPower(power);
+            backRight.setPower(power);
 
             telemetry.addData("Bearing to Tag", String.format("%.1f deg", currentBearing));
             telemetry.addData("Rotation Power", String.format("%.3f", rotationPower));
