@@ -69,7 +69,10 @@ AprilTagDetection id22 = null;
             telemetry.addData("At Target",      rotationPID.isAtTarget(currentBearing, targetBearing));
         } else {
             rotationPID.reset();
-            applyRotation(0);
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
             telemetry.addData("Tag 22", "Not Seen — motors stopped");
         }
 
