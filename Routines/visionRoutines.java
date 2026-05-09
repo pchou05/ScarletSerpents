@@ -50,7 +50,68 @@ AprilTagDetection id22 = null;
             telemetry.addData("Tag ID", tag.id + (tag.metadata != null ? " (in library)" : " (NOT in library)"));
         }
 
-        
+    
+    public void GoToPosition() {
+            aprilTagWebcam.update();
+
+            List<AprilTagDetection> allTags = aprilTagWebcam.getDetectedTags();
+            telemetry.addData("Total Tags Seen", allTags.size());
+            for (AprilTagDetection tag : allTags)
+            {
+                telemetry.addData("Tag ID", tag.id + (tag.metadata != null ? " (in library)" : " (NOT in library — no pose)"));
+            }
+
+            AprilTagDetection id24 = aprilTagWebcam.getTagBySpecificID(22);
+
+            if (id24 != null)
+            {
+                aprilTagWebcam.displayDetectionTelemetry(id24);
+
+                double targetX = id24.ftcPose.x;
+                double targetY = id24.ftcPose.y;
+
+                double moveXPower = movementPID.calculate(targetX);
+            // telemetry.addData(/*position difference*/);
+                moveX(moveXPower);
+                double moveYPower = movementPID.calculate(targetY) ;
+
+                moveY(-moveYPower);
+                // FIX 8: Changed bare ftcPose.y / ftcPose.x references to
+                //        id24.ftcPose.y / id24.ftcPose.x so they actually
+                //        compile and reference the detected tag's pose.
+            
+                telemetry.addData("Y Position target", String.format("%.1f in", id24.ftcPose.y));
+                telemetry.addData("X Position target", String.format("%.1f in", id24.ftcPose.x));
+
+            } else {
+                movementPID.reset();
+                moveX(0);
+                moveY(0);
+                telemetry.addData("Tag 24", "Not Seen — motors stopped");
+            }
+
+            aprilTagWebcam.displayDetectionTelemetry(id24);
+            telemetry.update();
+        }
+    }
+
+    private void moveX(double speed) {
+        backLeftMotor.setPower(-speed);   
+        backRightMotor.setPower(speed);  
+        frontLeftMotor.setPower(-speed); 
+        frontRightMotor.setPower(speed);  
+        }
+
+
+     private void moveY(double speed) {
+        backLeftMotor.setPower(speed);
+        frontLeftMotor.setPower(speed);
+        backRightMotor.setPower(speed);
+        frontRightMotor.setPower(speed);
+        }
+
+
+        //// dont keep this outside please make it inside!!!
         id22 = aprilTagWebcam.getTagBySpecificID(22);
 
         if (id22 != null) {
