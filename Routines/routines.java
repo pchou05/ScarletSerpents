@@ -6,36 +6,31 @@ package org.firstinspires.ftc.teamcode;
     import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
-private DcMotor intakeMotor1;
+
 
 public class routines extends LinearOpMode {
-    intakeMotor1 = hardwareMap.DcMotor.get(DcMotor.class, "intakeMotor1");
-    
-    public static void intake(){
-        intakeMotor1.setPower(1);
-    }
 
-    public void RPMControlInitialized()
-    {
-         double pastPosition = 0;
+    double pastPosition = 0;
     private ElapsedTime timer = new ElapsedTime();
     private double currentRPM = 0;
     
     private DcMotor shooterMotor;
     // private CRServo Servo1;
     // private CRServo Servo2;
-    // private DcMotor intakeMotor1;
+    private DcMotor intakeMotor1;
     // private DcMotor intakeMotor2;
     private String shooterState = "idle";
     private double offset = 0;
     
     private PIDController shooterPID;
     private boolean useRPMControl = true;
+  
     
-    @Override
-            
+    public void intake(){
+        intakeMotor1.setPower(1);
     }
-     public void runOpMode() throws InterruptedException {
+
+    public void runOpMode() throws InterruptedException {
         shooterMotor = hardwareMap.dcMotor.get("shooterMotor");
         // Servo1 = hardwareMap.crservo.get("Servo1");
         // Servo2 = hardwareMap.crservo.get("Servo2"); 
@@ -49,7 +44,7 @@ public class routines extends LinearOpMode {
 
         if (isStopRequested()) return;
 
-     while (opModeIsActive()) {
+        while (opModeIsActive()) {
             updateRPM();
             
             // Toggle RPM control mode with dpad
@@ -60,9 +55,25 @@ public class routines extends LinearOpMode {
                 useRPMControl = false;
             }
 
+            // Shooter state control
+            if(gamepad1.y) {
+                shooterState = "off";
+            } else if (gamepad1.b) {
+                shooterState = "far";
+            } else if (gamepad1.x) {
+                shooterState = "line";
+            } else if (gamepad1.a) {
+                shooterState = "corner";
+            } else if (gamepad1.dpad_left) {
+                shooterState = "idle";
+            }
             
-            handleShooter(shooterState);
-              if(gamepad2.right_bumper) {
+            handleShooter(shooterState);  
+
+            
+            
+            // Offset adjustment - Trim for shot power
+            if(gamepad2.right_bumper) {
                 offset += 0.001;
             } else if(gamepad2.left_bumper) {
                 offset -= 0.001;
@@ -79,12 +90,7 @@ public class routines extends LinearOpMode {
             telemetry.addData("Power Offset (Trim)", "%.3f", offset);
             telemetry.addData("Shooter Encoder", shooterMotor.getCurrentPosition());
             
-            // telemetry.addLine("\n=== INTAKE & SERVOS ===");
-            // telemetry.addData("Intake1 Power", "%.2f", intakeMotor1.getPower());
-            // telemetry.addData("Intake2 Power", "%.2f", intakeMotor2.getPower());
-            // telemetry.addData("Servo1 Power", "%.2f", Servo1.getPower());
-            // telemetry.addData("Servo2 Power", "%.2f", Servo2.getPower());
-            
+        
             telemetry.addLine("\n=== CONTROLS ===");
             telemetry.addData("DPad Up", "RPM Control Mode");
             telemetry.addData("DPad Down", "Power Control Mode");
@@ -97,7 +103,8 @@ public class routines extends LinearOpMode {
             
             telemetry.update();
         }
-        private void updateRPM(){
+    }
+    private void updateRPM(){
         double elapsedTime = timer.seconds();
         double currentPosition = shooterMotor.getCurrentPosition();
         if (elapsedTime > 0.1){
@@ -107,9 +114,10 @@ public class routines extends LinearOpMode {
         }
     }
     
-        private double getRPM(){
+    private double getRPM(){
         return currentRPM;
     }
+    
     private double getTargetRPM(String state) {
         switch (state){
             case "line": return 3500;      // Medium distance shot
@@ -121,6 +129,23 @@ public class routines extends LinearOpMode {
             default: return 0;
         }
     }
+    
+    private void setShooterRPM(double targetRPM){
+        double currentRPM = getRPM();
+        double error = targetRPM - currentRPM;
+        
+        double pidOutput = shooterPID.calculate(error);
+        double motorPower = pidOutput + offset;
+        
+        motorPower = Math.max(0, Math.min(1, motorPower));
+        
+        shooterMotor.setPower(motorPower);
+    }
+    
+    private void setShooterPower(double power) {
+        shooterMotor.setPower(Math.max(0, Math.min(1, power + offset)));
+    }
+    
     private void hitRPM(double value){
         double rpm = getRPM();
         if (rpm > value + 500){
@@ -131,6 +156,37 @@ public class routines extends LinearOpMode {
             shooterMotor.setPower(0.51);
         }
     }
+    
+    private void handleShooter(String state){
+        if (useRPMControl) {
+            double targetRPM = getTargetRPM(state);
+            setShooterRPM(targetRPM);
+        } else {
+            switch (state){
+                case "line":
+                    setShooterPower(0.69);
+                    break;
+                    
+                case "far":
+                    setShooterPower(0.76);
+                    break;
+            
+                case "corner":
+                    setShooterPower(0.67);
+                    break;
+                    
+                case "idle":
+                    hitRPM(300);
+                    break;
+                    
+                case "off":
+                case "wall": 
+                    setShooterPower(0);
+                    break;
+            }
+        }
+    }
+    
     private class PIDController {
         private double kp;
         private double ki;
@@ -168,17 +224,16 @@ public class routines extends LinearOpMode {
             previousError = 0;
             pidTimer.reset();
         }
-    
 
+    public void Intake()
+    {
+      
     }
-}
-  public void Intake()
+    
+    public void Shooter()
     {
 
     }
-    
-    public void Shooter() 
-    {
 
     }
 }
