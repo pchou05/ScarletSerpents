@@ -149,7 +149,7 @@ public class routines extends LinearOpMode {
         shooterMotor.setPower(Math.max(0, Math.min(1, power + offset)));
     }
 
-    
+
     
     public void hitRPM(double value){
         double rpm = getRPM();
@@ -240,6 +240,7 @@ public class routines extends LinearOpMode {
         }
       
     }
+    
     
     public void Shooter()
 {
