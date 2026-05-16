@@ -147,7 +147,7 @@ public class routines extends LinearOpMode {
         shooterMotor.setPower(Math.max(0, Math.min(1, power + offset)));
     }
     
-    private void hitRPM(double value){
+    public void hitRPM(double value){
         double rpm = getRPM();
         if (rpm > value + 500){
             shooterMotor.setPower(0.2);
@@ -233,13 +233,15 @@ public class routines extends LinearOpMode {
     
     public void Shooter()
 {
-       if(gamepad2.X)
+    double rpm = getRPM();
+ 
+       if(gamepad2.x)
     {
         if(480<rpm && rpm<520){
            feederMotor.setPower(1);
         }
         else{
-             setShooterRPM();
+             hitRPM(500);
         }
     }
 }
