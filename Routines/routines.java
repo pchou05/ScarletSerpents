@@ -13,7 +13,7 @@ public class routines extends LinearOpMode {
     double pastPosition = 0;
     private ElapsedTime timer = new ElapsedTime();
     private double currentRPM = 0;
-    
+    private DcMotor feederMotor;
     private DcMotor shooterMotor;
     // private CRServo Servo1;
     // private CRServo Servo2;
@@ -32,6 +32,7 @@ public class routines extends LinearOpMode {
 
     public void runOpMode() throws InterruptedException {
         shooterMotor = hardwareMap.dcMotor.get("shooterMotor");
+        feederMotor = hardwareMap.dcMotor.get("feederMotor");
         // Servo1 = hardwareMap.crservo.get("Servo1");
         // Servo2 = hardwareMap.crservo.get("Servo2"); 
         // intakeMotor1 = hardwareMap.dcMotor.get("intakeMotor1");
@@ -231,9 +232,17 @@ public class routines extends LinearOpMode {
     }
     
     public void Shooter()
+{
+       if(gamepad2.X)
     {
-
-    }
-
+        if(480<rpm && rpm<520){
+           feederMotor.setPower(1);
+        }
+        else{
+             setShooterRPM();
+        }
     }
 }
+    }
+
+    }
